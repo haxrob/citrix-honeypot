@@ -7,19 +7,21 @@
 
 ## Installation
 
+### Precompiled
 Precompiled Linux (x64) package available [here](https://github.com/x1sec/citrix-honeypot/releases)
 
+```
+mkdir citrix-honeypot
+cd citrix-honeypot
+wget https://github.com/x1sec/citrix-honeypot/releases/download/v0.01/citrix-honeypot-linux-amd64.tar.gz
+tar -xf citrix-honeypot-linux-amd64.tar.gz
+```
+
+### go get
 If you have a [Go](https://golang.org/) environment ready to go:
 
 ```bash
 go get github.com/x1sec/citrix-honeypot
-```
-
-You must provide certificate to serve HTTPS. To generate your own:
-```
-openssl genrsa -out server.key 2048
-openssl ecparam -genkey -name secp384r1 -out server.key
-openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
 ```
 
 ### Running
@@ -33,8 +35,10 @@ The honeypot will listen on both port `80` and `443`.
 
 Or to detach and run as a background process:
 ```
-$ nohup ./citrix-honeypot&
+nohup ./citrix-honeypot&
 ```
+
+(`citrix-honeypot` must run with root privledges to listen on the required ports)
 
 Results / data is written to the `./log` directory. They are:
 
