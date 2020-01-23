@@ -42,6 +42,8 @@ var (
 
 func main() {
 
+	fmt.Println("test")
+
 	setupLogging()
 
 	r := mux.NewRouter()
@@ -194,14 +196,15 @@ func logHandler(h http.Handler) http.Handler {
 func staticWrapper(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		headers := `Cache-Control : no-cache
+		headers := `Cache-Control : no-cache		
 		Server: Apache
+		X-Frame-Options: SAMEORIGIN
 		X-XSS-Protection: 1; mode=block
-		Content-Type: text/html; charset=UTF-8
-		Set-Cookie: NSC_TEMP=xyz;Path=/;expires=Wednesday, 09-Nov-1999 23:12:40 GMT;Secure
-		Set-Cookie: NSC_PERS=xyz;Path=/;expires=Wednesday, 09-Nov-1999 23:12:40 GMT;Secure`
+		Set-Cookie: NSC_TEMP=xyz;Path=/;expires=Wednesday, 09-Nov-2024 23:12:40 GMT;Secure
+		Set-Cookie: NSC_PERS=xyz;Path=/;expires=Wednesday, 09-Nov-2024 23:12:40 GMT;Secure`
 
-		//X-Frame-Options: SAMEORIGIN
+		//Content-Type: text/html; charset=UTF-8
+
 
 		setResponseHeaders(w, headers)
 
@@ -254,6 +257,7 @@ func setupLogging() {
 	cdir, _ := os.Getwd()
 	dir := cdir + "/logs/"
 
+	fmt.Println(dir)
 	// create logs dir
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.MkdirAll(dir, 0755)
