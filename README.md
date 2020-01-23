@@ -6,7 +6,6 @@
 ![screenshot](https://github.com/x1sec/citrix-honeypot/blob/master/img/screenshot.png)
 
 ## Installation
-### Using `go get`
 
 Precompiled Linux (x64) package available [here](https://github.com/x1sec/citrix-honeypot/releases)
 
