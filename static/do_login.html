@@ -1,0 +1,549 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Pragma" content="no-cache" />
+<title>Citrix Login</title>
+
+<link rel="stylesheet" href="admin_ui/common/css/ns/ui.css" type="text/css">
+<script type="text/javascript" src="admin_ui/common/js/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="admin_ui/common/js/jquery/jquery-migrate.js"></script>
+<script type="text/javascript" src="admin_ui/common/js/jquery/jquery.keyfilter.min.js"></script>
+<style type="text/css">
+.ns_alert_text a:hover
+{
+    color: #0000FF !important;
+}
+
+</style>
+<!--[if IE]>
+<style type="text/css">
+.login_combo
+{
+    width: 83%;
+}
+
+.login_button_cell
+{
+    padding-right: 31px;
+}
+</style>
+<![endif]-->
+<script language="JavaScript" type="text/javascript">
+var display_flag = "block";
+var admin_gui_https_port = "443";
+if(!document.all)
+    display_flag = "table-row";
+
+function checkform ( form )
+{
+    //getTimezoneOffset() will return (GMT - client) minutes. We need (client - GMT) seconds
+    document.form1.timezone_offset.value = new Date().getTimezoneOffset() * -60;
+
+    if (form.username.value === "") {
+      show_error("Please enter user name", form.username);
+      return false;
+    }
+    if (form.password.value === "") {
+      show_error("Please enter password", form.password);
+      return false;
+    }
+  
+    form.username.value = addslashes(form.username.value);
+    form.password.value = addslashes(form.password.value);
+    
+    form.username.value = encodeURIComponent(form.username.value);
+    form.password.value = encodeURIComponent(form.password.value);
+    
+    loggingInText();
+    var intervalId = setInterval(loggingInText, 200);
+    $(".login_button").prop("disabled", true);
+    
+    return true ;
+}
+
+function addslashes(string) {
+    return string.replace(/\\/g, '\\\\').
+        replace(/\t/g, '\\t').
+        replace(/\n/g, '\\n').
+        replace(/\f/g, '\\f').
+        replace(/\r/g, '\\r').
+        replace(/"/g, '\\"');
+}
+
+function checkHTTP() 
+{
+    if (location.protocol == "http:") 
+    {
+        var login_link_anchor = $("<a>").attr("tabindex", "0").addClass("ns_login_link").append("Use https");
+
+        login_link_anchor.click(function() {
+            redirectToHTTPS();
+        });
+        
+        login_link_anchor.keypress(function(e) {
+            var keynum;
+
+            if(window.event) // IE
+            {
+                keynum = e.keyCode;
+            }
+            else if(e.which) // Netscape/Firefox/Opera
+            {
+                keynum = e.which;
+            }
+
+            if(keynum == 13) //Enter key
+            {
+                login_link_anchor.click();
+            }
+        });        
+
+        $(".ns_login_secure").append(login_link_anchor);
+    } 
+    else 
+    {
+        $('.ns_login_secure').hide();
+    
+        return "";
+    }
+}
+
+function redirectToHTTPS() 
+{
+    var url_suffix = (admin_gui_https_port != "443" && admin_gui_https_port != 443) ? (":" + admin_gui_https_port): "";
+    var url = "https://" + location.host + url_suffix;
+
+    window.location.href = url;
+}
+
+function key_pressed(e)
+{
+    var keynum;
+    
+    if(window.event) // IE
+        keynum = e.keyCode;
+    else if(e.which) // Netscape/Firefox/Opera
+        keynum = e.which;
+
+    if(keynum == 13) //Enter key
+        submit_form();
+
+    return true;
+}
+
+var dots = 0;
+
+function loggingInText() {
+	$("#logintext").text("Logging On");
+	if (dots < 3) {
+		$('#loadingdots').append('.');
+		dots++;
+	} else {
+		$('#loadingdots').html('');
+		dots = 0;
+	}
+}
+
+function submit_form()
+{
+    if(checkform(document.form1))
+    {
+        document.form1.submit();
+    }
+}
+
+function is_options_shown()
+{
+    var startin_row = document.getElementById("ns_login_options");
+    return (!startin_row.style || startin_row.style.display == "" || startin_row.style.display == display_flag);
+}
+
+function show_error(message, element)
+{
+    if(element)
+    {
+        setTimeout(function(){ element.focus();}, 500);    
+    }
+    
+    if(message)
+    {
+        $("#login_error").text(message);
+        $("#login_error").css('visibility', 'visible');
+    }
+}
+
+// Mapping used by decodeXml
+var escaped_one_to_xml_special_map = {
+    '&amp;': '&',
+    '&quot;': '"',
+    '&lt;': '<',
+    '&gt;': '>',
+    "&#039;": "'"
+};
+
+// To decode the strings which are encoded using php function htmlspecialchars in the backend
+function decodeXml(string) {
+    return string.replace(/(&quot;|&#039;|&lt;|&gt;|&amp;)/g,
+        function(str, item) {
+            return escaped_one_to_xml_special_map[item];
+    });
+}
+
+function isSafari() {
+  return /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor);
+}
+
+function getSupportedVersionString() {
+    try {
+		var display_string = "Best viewed in IE8+, Firefox 3.6.25+, Chrome v19+ or Safari 5.1.1+(for Mac)";
+		var nAgt = navigator.userAgent;
+		var browserName = navigator.appName;
+		var fullVersion = '' + parseFloat(navigator.appVersion);
+		var majorVersion = parseInt(navigator.appVersion, 10);
+		var nameOffset, verOffset, ix;
+		var vendor = null;
+		if (navigator.vendor !== null) vendor = navigator.vendor.toLowerCase();
+		// User agents for IE http://msdn.microsoft.com/library/ms537503.aspx
+		if ((nAgt.indexOf("Trident")) != -1) {
+			if (nAgt.indexOf("rv:") != -1) {
+				preg_match('/Trident\/\d{1,2}.\d{1,2}.*rv:([0-9]*)/', nAgt, $matches);
+				browserName = "MSIE";
+				fullVersion = $matches[1];
+			} else if ((verOffset = nAgt.indexOf("MSIE")) != -1) {
+				browserName = "MSIE";
+				fullVersion = nAgt.substring(verOffset + 5);
+			}
+		}
+        // For Edge.
+        else if ((nAgt.indexOf("Edge")) != -1) {
+            browserName = "EDGE";
+        }
+		// In Chrome, the true version is after "Chrome"
+		else if ((verOffset = nAgt.indexOf("Chrome")) != -1) {
+			browserName = "Chrome";
+			fullVersion = nAgt.substring(verOffset + 7);
+		}
+		// In Safari, the true version is after "Safari" or after "Version"
+		else if ((verOffset = nAgt.indexOf("Safari")) != -1) {
+			browserName = "Safari";
+			fullVersion = nAgt.substring(verOffset + 7);
+			if ((verOffset = nAgt.indexOf("Version")) != -1) fullVersion = nAgt.substring(verOffset + 8);
+		}
+		// In Firefox, the true version is after "Firefox"
+		else if ((verOffset = nAgt.indexOf("Firefox")) != -1) {
+			browserName = "Firefox";
+			fullVersion = nAgt.substring(verOffset + 8);
+		}
+		// If you can't detect the browser, return the not-supported warning string
+		else {
+			$(".ns_browser_not_supported_center").show();
+			return;
+		}
+		// trim the fullVersion string at semicolon/space if present
+		if ((ix = fullVersion.indexOf(";")) != -1) fullVersion = fullVersion.substring(0, ix);
+		if ((ix = fullVersion.indexOf(" ")) != -1) fullVersion = fullVersion.substring(0, ix);
+		majorVersion = parseInt('' + fullVersion, 10);
+		if (isNaN(majorVersion)) {
+			fullVersion = '' + parseFloat(navigator.appVersion);
+			majorVersion = parseInt(navigator.appVersion, 10);
+		}
+		if ((browserName == "EDGE") ||
+            (browserName == "MSIE" && compareFullVersion(fullVersion, "8")) || //IE
+			(browserName == "Firefox" && compareFullVersion(fullVersion, "3.6.25")) || //Firefox
+			(browserName == "Chrome" && compareFullVersion(fullVersion, "19") && vendor !== null && vendor.indexOf('google') != -1) || //chrome
+			(browserName == "Safari" && compareFullVersion(fullVersion, "5.1.1") && vendor !== null && vendor.indexOf('apple') != -1) && nAgt.toLowerCase().indexOf('mac') != -1) //Safari for mac
+		{
+			$(".ns_login_center_content").show();
+			return;
+		} else {
+			$(".ns_browser_not_supported_center").show();
+			return;
+		}
+	} catch (err) {
+		$(".ns_login_center_content").show();
+		return;
+	}
+	$(".ns_login_center_content").show();
+}
+
+function show_login_pane()
+{
+    $(".ns_browser_not_supported_center").hide();
+    $(".ns_login_center_content").show();
+}
+
+function compareFullVersion(a, b) //if a>b, return true, else return false
+{
+    
+	if (a === b)
+    {
+       return true;
+    }
+
+    var a_components = a.split(".");
+    var b_components = b.split(".");
+
+    var len = Math.min(a_components.length, b_components.length);
+
+    // loop while the components are equal
+    for (var i = 0; i < len; i++)
+    {
+        // A bigger than B
+        var val_a = parseInt(a_components[i]);
+		var val_b = parseInt(b_components[i]);
+		if(isNaN(val_a) || isNaN(val_b))
+		 return false;
+		if (parseInt(a_components[i]) > parseInt(b_components[i]))
+        {
+            return true;
+        }
+
+        // B bigger than A
+        if (parseInt(a_components[i]) < parseInt(b_components[i]))
+        {
+            return false;
+        }
+    }
+
+    // If one's a prefix of the other, the longer one is greater.
+    if (a_components.length >= b_components.length)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+show_eula = function(uname)
+{
+   $("#eula-text").html(eula_message);
+   $("#ns_login_content").addClass("overlay");
+   $("#eula-container").show();
+   $("#eula-accepted").prop('checked', false);
+   $("#username").val(uname)
+   
+}
+
+close_eula = function()
+{
+   $("#ns_login_content").removeClass("overlay")
+   $("#eula-container").hide();
+   
+}
+
+continue_eula = function()
+{
+    var eula_accepted = $("#eula-checkbox").prop('checked');
+    if (eula_accepted)
+    {
+        close_eula();
+        $("#eula-accepted").prop('checked', eula_accepted);
+    }
+    else
+    {
+        $("#eula_error").show();
+    }
+}
+
+
+</script>
+
+</head>
+<body class="ns_login_body">
+<noscript>
+    <div class="center_panel ns_alert_text">
+        JavaScript is either disabled in or not supported by the Web browser. To continue logon, use a Web browser that supports JavaScript or enable JavaScript in your current browser.
+    </div>
+</noscript>
+
+<form name="form1" action="/login" method="post" autocomplete="off" autocapitalize="off" onsubmit="return checkform(this);">
+    <div class="ns_login_wrapper">
+	    <div class="ns_login_inner_wrapper">
+            <div class="ns_login_top" style="display: none;"></div>
+			<div class="ns_login_center">
+			    <div class="ns_browser_not_supported_center" >
+		        	<span>Citrix ADC</span>
+	              	<div class="ns_browser_not_supported_center_content">
+		                <div class="ns_browser_not_supported_center_message"> Your browser is not supported. Please use one of the following browsers
+		                </div>
+	                 	<div>
+	                       <div class="ns_browser_not_supported_browser_icon">
+	                       		<div>
+	                           		<img src="admin_ui/rdx/core/css/internet-explorer.png" alt="Internet Explorer">
+	                       			<div>8 and above</div>
+	                   			</div>
+	               			</div>
+	                       <div class="ns_browser_not_supported_browser_icon">
+	                       		<div>
+	                       			<img src="admin_ui/rdx/core/css/firefox.png" alt="Firefox">
+	                       			<div>3.6.25 and above</div>
+	                   			</div>
+	               			</div>
+	                       <div class="ns_browser_not_supported_browser_icon">
+	                       		<div>
+	                       			<img src="admin_ui/rdx/core/css/chrome.png" alt="Chrome">
+	                       			<div>15 and above</div>	
+	                       		</div>
+	                   		</div>
+	                       <div class="ns_browser_not_supported_browser_icon no_boder">
+	                       		<div>
+	                       			<img src="admin_ui/rdx/core/css/safari.png" alt="Safari">
+	                       			<div>5.1.3 and above</div>	
+	                   			</div>
+	               			</div>
+	                  	</div>
+	                 	<p class="ns_browser_not_supported_center_message">
+	                 		<a onkeypress=\"javascript: if(event.keyCode == 13) {show_login_pane(); event.preventDefault();}\" onclick="show_login_pane()"> Continue, </a> I understand this browser may not be compatible.
+	         			</p>
+	              	</div>
+		        </div>
+		        <div class="ns_login_center_content">
+					<div  class="ns_login_inner_div">
+						<div  class="ns_login_form" >
+                            <div id="login_error" class="login_error"> 
+                            </div>
+						   	<div id="ns_user_pass_section">
+								<div class="ns_grid_text user_name">
+                                    <span>User Name</span>
+									
+                                    <label for="username" style="display: none;">User Name</label>
+                                    <input type="text" id="username" name="username" class="login_input" onfocus=1>
+								</div>
+
+								<div class="ns_grid_text login_password">
+                                    <span>Password</span>
+
+									<label for="password" style="display: none;">Password</label>
+                                    <input type="password" name="password" id="password" class="login_input">
+								</div>
+                                    <div style="display:none">
+                                        <label for="eula-accepted" style="display: none;">EULA</label>
+                                        <input type="checkbox" name="eula" id="eula-accepted" value="TRUE">
+                                    </div>
+                                    <div class="login_button_cell">
+                                        <label for="url" style="display: none;">URL</label>
+                                        <input type="hidden" name="url" id="url" value="">
+
+                                        <label for="timezone_offset" style="display: none;">Timezone Offset</label>
+                                        <input type="hidden" name="timezone_offset" id="timezone_offset" value="">
+
+                                        <button type="submit" class="login_button rdx_blue_button"><span id="logintext">Log On</span><span id="loadingdots"></span></button>
+                                    </div>
+                            </div>
+							<div class="ns_login_logo ns_logo_placement">
+                                <div class="login_title_and_lable" style="font-weight: bold;">Citrix</div>
+								<div class="login_title_and_lable">ADC</div>
+								<div class="ns_login_secure"></div>
+							</div>
+						</div>
+					</div>
+			</div>
+		    </div>
+		    </div>
+		</div>
+	</div>
+</form>
+
+<script language="JavaScript" type="text/javascript">
+//Don't allow this page to be embedded inside a frame
+if(self != top)
+{
+    document.getElementsByTagName("body")[0].style.display = "none";
+    top.location = self.location;
+}
+else
+{   
+        
+    $('form[name="form1"] #username').focus();
+}
+
+function input_hints() {
+    var inputs = document.getElementsByTagName("input");
+    for (var i = 0; i < inputs.length; i++) {
+            // test to see if the hint span exists first
+            if (inputs[i].parentNode.getElementsByTagName("span")[0]) {
+                    // the span exists!  on focus, show the hint
+                    inputs[i].onfocus = function() {
+                            this.parentNode.getElementsByTagName("span")[0].className = "ns_active ns_active_color";
+                    };
+                            // when the cursor moves away from the field, hide the hint
+                    inputs[i].onblur = function() {
+                            this.parentNode.getElementsByTagName("span")[0].className = "ns_active";
+                    };
+            }
+    }
+    // repeat the same tests as above for selects
+    var selects = document.getElementsByTagName("select");
+    for (var k = 0; k < selects.length; k++) {
+            if (selects[k].parentNode.getElementsByTagName("span")[0]) {
+                    selects[k].onfocus = function() {
+                            this.parentNode.getElementsByTagName("span")[0].className = "ns_active ns_active_color";
+                    };
+                    selects[k].onblur = function() {
+                            this.parentNode.getElementsByTagName("span")[0].className = "ns_active";
+                    };
+            }
+    }
+}
+
+function login_page_resize_handler() {
+    var window_height = $(window).height();
+    var container_height = $('.ns_login_center_content').outerHeight();
+    var container_top = Math.ceil((window_height - container_height) / 2);
+    $('.ns_login_center_content').css("margin-top", container_top);
+    var login_title_and_lable_width = $('.login_title_and_lable').outerWidth();
+    var left_position = login_title_and_lable_width + 20;
+    $('.login_title_and_lable').css("left", "-" + left_position);
+}
+
+function set_focus(){
+    $("#username").focus();
+}
+
+$(document).ready(function(){
+    getSupportedVersionString();
+    login_page_resize_handler(); 
+    input_hints();
+    document.form1.username.value = "";
+    document.form1.password.value = "";
+    set_focus();
+    checkHTTP();
+     show_error("Invalid username or password", form1.username);
+    $(window).resize(function() {
+        login_page_resize_handler();
+    });
+    
+   });
+
+
+</script>
+<div id="eula-container" class="eula-container show-modal" style="height: 480px;width:670px;display:none;">
+            <div class="eula-header">
+                <span>End User License Aggrement</span>
+                <span id="eula_window_close" class="eula_window_close eula-right">
+                    <a href="index.html#noAnchor" onkeypress=\"javascript: if(event.keyCode == 13) {close_eula(); event.preventDefault();}\" onclick=close_eula()>X</a>
+                </span>
+            </div>
+            <div class="eula-content">
+                <p> Please read and agree to the following terms and conditions in order to continue</p>
+                <div id= "eula-text" class="eula-text"> </div>
+                <div class="eula-terms">
+                    <label for="eula-checkbox" style="display: none;">EULA</label>
+                    <input id="eula-checkbox" type="checkbox" style="width : auto;height: auto">I have read and agree to the Terms and Conditions
+                </div>
+                <div id="eula_error" class= "eula_error_text" style="display:none">
+                    In order to use our services, you must agree to Citrix's Terms of Service.
+                </div>
+                <br/>
+                <div class="">
+                    <input type="button" value="Continue" onkeypress=\"javascript: if(event.keyCode == 13) {continue_eula(); event.preventDefault();}\" onclick=continue_eula() class="button_blue buttons" /> 
+                    <input type="button" value="Cancel" onkeypress=\"javascript: if(event.keyCode == 13) {close_eula(); event.preventDefault();}\" onclick=close_eula() class="button_grey buttons"/>
+                </div>
+            </div>
+            </div>
+</body>
+</html>
