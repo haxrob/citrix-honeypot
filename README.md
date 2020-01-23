@@ -13,7 +13,7 @@ Precompiled Linux (x64) package available [here](https://github.com/x1sec/citrix
 ```
 mkdir citrix-honeypot
 cd citrix-honeypot
-wget https://github.com/x1sec/citrix-honeypot/releases/download/v0.01/citrix-honeypot-linux-amd64.tar.gz
+wget https://github.com/x1sec/citrix-honeypot/releases/download/v0.02/citrix-honeypot-linux-amd64.tar.gz
 tar -xf citrix-honeypot-linux-amd64.tar.gz
 ```
 
