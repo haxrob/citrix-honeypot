@@ -8,6 +8,8 @@
 ## Installation
 ### Using `go get`
 
+Precompiled Linux (x64) package available [here](https://github.com/x1sec/citrix-honeypot/releases)
+
 If you have a [Go](https://golang.org/) environment ready to go:
 
 ```bash
