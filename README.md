@@ -36,6 +36,7 @@ $ nohup ./citrix-honeypot&
 ```
 
 Results / data is written to the `./log` directory. They are:
+
 `hits.log` - Scanning attempts and exploitation attempts with all data (e.g. headers, post body)
 
 `all.log` - All HTTP requests that are observed
