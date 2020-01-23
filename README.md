@@ -28,12 +28,18 @@ It's easy as:
 ./citrix-honeypot
 ```
 
+The honeypot will listen on both port `80` and `443`.
+
 Or to detach and run as a background process:
 ```
-$ nohup ./citrix-honeypot
+$ nohup ./citrix-honeypot&
 ```
 
 Results / data is written to the `./log` directory. They are:
 `hits.log` - Scanning attempts and exploitation attempts with all data (e.g. headers, post body)
+
 `all.log` - All HTTP requests that are observed
+
 `logins.log` - Attempted logins to the web interface
+
+`tlsErrors.log` - Often internet scanners will send invalid data to port `443`. HTTPS errors are logged here.
