@@ -82,6 +82,7 @@ func main() {
 	}
 	defer tlsErrLog.Close()
 
+	// must support HTTPS
 	if _, err := os.Stat("./server.crt"); os.IsNotExist(err) {
 		fmt.Println("TLS certificate missing.")
 		os.Exit(1)
@@ -101,16 +102,17 @@ func main() {
 	srv.ListenAndServeTLS("server.crt", "server.key")
 }
 
-/***** Handlers ******/
+/* 404 */
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("not found - 404", r.URL.Path)
 	w.Write([]byte("The requested page was not found on this server."))
 }
 
+/* main login page */
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./static/index.html")
 }
 
+/* attempted login */
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodPost {
@@ -127,8 +129,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./static/do_login.html")
 }
 
+/* trigger CVE-2019-19781 traversal vulnerability */
 func traversalHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.URL)
+
 	match, _ := regexp.MatchString(".+(pl|xml)", r.URL.Path)
 	if match == false {
 		return
@@ -145,6 +148,7 @@ func traversalHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+/* scanning attempts for CVE-2019-19781 */
 func smbHandler(w http.ResponseWriter, r *http.Request) {
 
 	message := "Scanning detected ... "
@@ -169,6 +173,7 @@ func smbHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(smbConfig))
 }
 
+/* Log all requests regardless of match */
 func logHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -185,6 +190,7 @@ func logHandler(h http.Handler) http.Handler {
 	})
 }
 
+/* default headers */
 func staticWrapper(h http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -203,6 +209,7 @@ func staticWrapper(h http.Handler) http.HandlerFunc {
 	})
 }
 
+/* set headers in response */
 func setResponseHeaders(w http.ResponseWriter, h string) {
 	t := time.Now().UTC()
 	d := t.Format(time.RFC1123)
@@ -215,6 +222,7 @@ func setResponseHeaders(w http.ResponseWriter, h string) {
 	}
 }
 
+/* Log everything related to CVE-2019-19781 */
 func writeLogEntry(r *http.Request, message string) {
 	hitLog.mu.Lock()
 	defer hitLog.mu.Unlock()
@@ -240,9 +248,12 @@ func writeLogEntry(r *http.Request, message string) {
 
 }
 
+/* should do this better */
 func setupLogging() {
 
-	dir := "./logs/"
+	cdir, _ := os.Getwd()
+	dir := cdir + "/logs/"
+
 	// create logs dir
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.MkdirAll(dir, 0755)
@@ -251,9 +262,9 @@ func setupLogging() {
 		}
 	}
 
-	openLogger(&hitLog, "./logs/hits.log")
-	openLogger(&loginAttemptLog, "./logs/logins.log")
-	openLogger(&allRequestsLog, "./logs/all.log")
+	openLogger(&hitLog, dir + "hits.log")
+	openLogger(&loginAttemptLog, dir + "logins.log")
+	openLogger(&allRequestsLog, dir + "all.log")
 }
 
 func openLogger(e *eventLogger, path string) {
