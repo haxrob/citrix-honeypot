@@ -1,9 +1,9 @@
 # Citrix ADC (NetScaler) Honeypot
 - Detects and logs payloads for CVE-2019-19781 (Shitrix / Citrixmash)
 - Logs failed login attempts
-- Serves HTTP content taken from real appliance in order to increase chance of indexing on search engines (e.g. google, shodan etc.)
+- Serves content and headers taken from real appliance in order to increase chance of indexing on search engines (e.g. google, shodan etc.)
 
-![screenshot](https://github.com/x1sec/citrix-honeypot/tree/master/img/screenshot.png)
+![screenshot](https://github.com/x1sec/citrix-honeypot/blob/master/img/screenshot.png)
 
 ## Installation
 ### Using `go get`
