@@ -31,20 +31,18 @@ It's easy as:
 ./citrix-honeypot
 ```
 
-The honeypot will listen on both port `80` and `443`.
+The honeypot will listen on both port `80` and `443` (so it must be run as `root` user)
 
 Or to detach and run as a background process:
 ```
-nohup ./citrix-honeypot&
+nohup ./citrix-honeypot &
 ```
-
-(`citrix-honeypot` must run with root privledges to listen on the required ports)
 
 Results / data is written to the `./log` directory. They are:
 
 `hits.log` - Scanning attempts and exploitation attempts with all data (e.g. headers, post body)
 
-`all.log` - All HTTP requests that are observed
+`all.log` - All HTTP requests that are observed hitting the server
 
 `logins.log` - Attempted logins to the web interface
 
